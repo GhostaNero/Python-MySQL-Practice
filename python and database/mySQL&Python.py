@@ -16,8 +16,7 @@ def bold(type):
 def initiate():
 
     #Initiate path to the database
-    path = "C:\Coding Portfolio\Python\python and database\dataset\data"
-
+    path = ignore.path
     #read all file name into a list
     try:
         listFile = os.listdir(path)
@@ -152,7 +151,7 @@ def databaseOperation(countryCode, fileList):
             #print a log for the success of creation
             print("System log: table created for", name)
             #read in the data
-            df = pd.read_csv(f"C:\Coding Portfolio\Python\python and database\dataset\data\{fileList[i]}", header=None, dtype={0:'string', 1:'string', 2:'string', 3:'string'})
+            df = pd.read_csv(f"{ignore.path}\{fileList[i]}", header=None, dtype={0:'string', 1:'string', 2:'string', 3:'string'})
             df.columns = ["firstName", "secondName", "Gender", "countryCode"]
             #remove all the duplicate
             dfUnique = df.drop_duplicates()
@@ -169,14 +168,26 @@ def databaseOperation(countryCode, fileList):
                 mycursor.execute(sql,)
                 mydb.commit()
                 print("System log: table created for", name)
-                df = pd.read_csv(f"C:\Coding Portfolio\Python\python and database\dataset\data\{fileList[i]}", header=None, dtype={0:'string', 1:'string', 2:'string', 3:'string'})
+                df = pd.read_csv(f"{ignore.path}\{fileList[i]}", header=None, dtype={0:'string', 1:'string', 2:'string', 3:'string'})
                 df.columns = ["firstName", "secondName", "Gender", "countryCode"]
                 dfUnique = df.drop_duplicates()
                 dfUnique.to_sql(name, schema='COUNTRY', con=connection, if_exists='append', index=False, chunksize=500000)
                 print("Success")
                 
-                
-                
+
+def nameFinder(listName, listFile):
+    
+    bold("Welcome to the name finder tool\n")
+    countryCode = input("Please enter a country code (if empty will search for every country table): ")
+    name = input("Please enter a name (type quit to leave): ")
+    
+    while len(name) == 0 and name != "quit":
+        print("Error! Please enter a name")
+        name = input("Enter (type quit to leave): ")
+    
+    if name != "quit":
+        print("works")
+             
             
 def menuSelection():
     
@@ -240,6 +251,8 @@ def callFunction(choice, listName, listFile):
         userGuide()
     elif choice == 2:
         codeFunction(listName)
+    elif choice == 3:
+        nameFinder(listName, listFile)
     
             
 def main():
