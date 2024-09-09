@@ -79,45 +79,6 @@ def codeFunction(list):
     #quit 
     print("\n")
     return 0 
-
-
-def askName():
-    
-    #title to display
-    bold("\nName Search!")
-    #user info
-    print("\nIf either first name or second name is left blank. \nThe returned result will be a number if the result exceed more than 30 people. \nLeaving it blank will result in a number result.")
-    firstName = input("\nPlease enter the FIRST name for your desired search. \nError will be displayed if numeric value is typed in. \nInput: ")
-    print("\n")
-    secondName = input("Please enter the SECOND name for your desired search. \nError will be displayed if numeric value is typed in \nInput: ")
-    
-    #checking if user entered values for firstName
-    if firstName:
-        #if non-alphabetic values are detected
-        if firstName.isdigit() == True: 
-            #print error message
-            print("Error Code: 03. Invalid first name.")
-            #back to menu
-            menuSelection()
-    #if value empty
-    else:
-        #replace value with * operator so mySql search for everything
-        firstName = "*" 
-    
-    #same thing as above
-    if secondName:
-        
-        if secondName.isdigit() == True:
-            
-            print("Error code: 04. Invalid second name.")
-            sys.exit()
-            
-    else:
-        
-        secondName = "*"
-    
-    return firstName, secondName
-            
     
 
 def databaseOperation(countryCode, fileList):
