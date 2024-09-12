@@ -84,7 +84,6 @@ def nameFinderOperation(quickSearch, targetFirstName, targetSecondName, countryC
     
     try:
         
-        data = []
         
         mydb = mysql.connector.connect(
         host="localhost",
@@ -101,88 +100,130 @@ def nameFinderOperation(quickSearch, targetFirstName, targetSecondName, countryC
         
         for i in range(len(fileName)):
             
-            sql = f"SELECT * FROM `{fileName[i].lower()}` WHERE firstName REGEXP '^[^abcdefghijklmnopqrstuwvzx]*$' OR secondName REGEXP  '^[^abcdefghijklmnopqrstuwvzx]*$';"
-            mycursor.execute(sql)
-            
-            data = mycursor.fetchone()
-            
-            if not data:
-                quickSearchFileList.append(fileName[i].lower())
+            try:
+                sql = f"SELECT * FROM `{fileName[i].lower()}` WHERE firstName REGEXP '^[^abcdefghijklmnopqrstuwvzx]*$' OR secondName REGEXP  '^[^abcdefghijklmnopqrstuwvzx]*$';"
+                mycursor.execute(sql)
+                
+                data = mycursor.fetchone()
+                
+                if not data:
+                    quickSearchFileList.append(fileName[i].lower())
+            except:
+                print("Error, the initiation of the quick search list has encountered a problem")
+                return 1
         
         if countryCode:
             
-            countryCode.lower()
-            
-            if targetFirstName:
+            try:
+                countryCode.lower()
                 
-                sql = f"SELECT * FROM `{countryCode}` WHERE firstName = `{targetFirstName}`;"
-            
-            elif targetSecondName:
-                sql = f"SELECT * FROM `{countryCode}` WHERE secondName = `{targetSecondName}`;"
+                if targetFirstName:
+                    
+                    sql = f"SELECT * FROM `{countryCode}` WHERE firstName = `{targetFirstName}`;"
                 
-            else:
-                sql = f"SELECT * FROM `{countryCode}` WHERE firstName = `{targetFirstName} AND secondName = `{targetSecondName}`;"
-            
-            mycursor.execute(sql)
-            
-            data = mycursor.fetchall()
+                elif targetSecondName:
+                    sql = f"SELECT * FROM `{countryCode}` WHERE secondName = `{targetSecondName}`;"
+                    
+                else:
+                    sql = f"SELECT * FROM `{countryCode}` WHERE firstName = `{targetFirstName} AND secondName = `{targetSecondName}`;"
+                
+                mycursor.execute(sql)
+                
+                data = mycursor.fetchall()
+                
+                if data:
+                    
+                    return True
+                else:
+                    return False
+                
+            except:
+                
+                print("Error, there has been a problem while trying to search for a name with a specific country code.")
+                return 1
 
             
 
         else:
             
+            
+            countryCodeExists = []
+            
             if quickSearch.lower() == "y":
 
+                try:
+                    for i in range(len(quickSearchFileList)):
+                        
+                        addon = ""
+                        addon2 = ""
+                        sql = f"SELECT * FROM `{quickSearchFileList[i].lower()}` WHERE"
+                        
+                        if targetFirstName:
+                            
+                            addon = f"firstName = `{targetFirstName}`"
+                            
+                        if targetSecondName:
+                            
+                            addon2 = f"secondName = `{targetSecondName}`"
+                        
+                        sql = sql + addon + " AND " + addon2 + ";"
+                        
+                        mycursor.execute(sql)
+                        
+                        data = mycursor.fetchone()
+                        
+                        if data:
                 
-                for i in range(len(quickSearchFileList)):
-                     
-                    addon = ""
-                    addon2 = ""
-                    sql = f"SELECT * FROM `{quickSearchFileList[i].lower()}` WHERE"
-                    
-                    if targetFirstName:
+                            countryCodeExists.append(quickSearchFileList[i])
                         
-                        addon = f"firstName = `{targetFirstName}`"
-                        
-                    if targetSecondName:
-                        
-                        addon2 = f""
+                        return quickSearchFileList
+                except:
                     
-                    sql = sql + addon + " AND " + addon2 + ";"
-                    
-                    mycursor.execute(sql)
-                    
-                    data.append( mycursor.fetchall() )
-                
+                    print("Error, problem occured while trying to do a quick search")
+                    return 1
                 
                 
             if quickSearch.lower() == 'n':
                 
-                for i in range(fileName):
-                    
-                    pass
-                    
-                    
+                try:
+                    for i in range(fileName):
+                        
+                        addon = ""
+                        addon2 = ""
+                        
+                        sql = f"SELECT * FROM {fileName[i].lower()} WHERE"  
+                        
+                        if targetFirstName:
+                            
+                            addon = f"firstName = `{targetFirstName}`"
+                            
+                        if targetSecondName:
+                            
+                            addon2 = f"secondName = `{targetSecondName}`"    
+                        
+                        sql = sql + addon + " AND " + addon2 + ";"   
+                        
+                        mycursor.execute(sql) 
+                        
+                        data = mycursor.fetchone()
+                        
+                        if data:
+                            
+                            countryCodeExists.append(fileName[i])
+                            
+                    return countryCodeExists
                 
-                
-                
-                
-        if data:
-            
-            return data
-        
-        else:
-            
-            return 0
-                     
-                    
+                except:
+                    print("Error, problem occured while trying to do a full search")
+                    return 1
+                                   
 
     except:
         
-        
-        print("hello")
+        print("Error, there has been some kind of bug within the search operation.")
+        return 1
 
-def reparimentOperation(countryCode, fileList):
+def repairmentOperation(countryCode, fileList):
     
     #establish connection to database
     mydb = mysql.connector.connect(
