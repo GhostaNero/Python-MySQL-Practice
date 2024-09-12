@@ -142,3 +142,14 @@ The only hard part about this is the connection to Mysql and realising that my i
 Some work around with the logic with validation. 
 
 I think I can improve the construct of the program and make it more compact and neat. 
+
+
+
+
+
+UPDATE ONE
+=================================================
+
+I am basically done with the back end of the name finder SQL operation. However I still need to write a rigorous testing plan to make sure everything goes according to how I have planned it.
+
+Its is definitely not the neatest code and there is alot of repetition which I will later fix when my program is full functioning (AKA optimisation)
