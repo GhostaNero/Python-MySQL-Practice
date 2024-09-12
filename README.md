@@ -135,6 +135,10 @@ YE - Yemen
 ZA - South Africa
 
 
+
+
+
+THOUGHTS AND FEEDBACK
 =================================================
 
 The only hard part about this is the connection to Mysql and realising that my importing time for data is already efficient enough for single csv file. (Spent way too long trying to import the whole csv folder in less than 5 minutes.)
@@ -143,6 +147,8 @@ Some work around with the logic with validation.
 
 I think I can improve the construct of the program and make it more compact and neat. 
 
+
+Note: there will be much more reflection and thoughts after I am done with this program. As of now I am still learning more and more.
 
 
 
