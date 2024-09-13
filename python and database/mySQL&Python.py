@@ -82,9 +82,7 @@ def codeFunction(list):
 
 def nameFinderOperation(quickSearch, targetFirstName, targetSecondName, countryCode, fileName):
     
-    try:
-        
-        
+    try:  
         mydb = mysql.connector.connect(
         host="localhost",
         user="root",
@@ -182,7 +180,7 @@ def nameFinderOperation(quickSearch, targetFirstName, targetSecondName, countryC
                     for i in range(fileName):
                         
                         sql = f"SELECT * FROM {fileName[i].lower()} " + addon
-                        
+
                         mycursor.execute(sql) 
                         
                         data = mycursor.fetchone()
@@ -291,11 +289,30 @@ def nameFinder(listName):
     if firstName != "quit" and secondName != "quit":
         
         code = input("Please enter the country code to give a more precise search (if left blank, will search through every table): ")
+        
         if code:
+            
             state = nameFinderOperation(quickSearch, firstName, secondName, code, listName)
+            
+            if state == True:
+                
+                print("Name is found")
+                return 0
+                
         else:
+            
             print("We have detected that a country code hasn't been entered, would you like to enable quick search? (only works with english names)")
+            
             quickSearch = input("Please enter Y or N: ")
+            
+            arrayOfCountryCode = nameFinderOperation(quickSearch, firstName, secondName, code, listName)
+            
+            if arrayOfCountryCode:
+                
+                for i in arrayOfCountryCode:
+                    
+                    print(arrayOfCountryCode[i])
+                    return 0
       
         
 def validationNameFinder(name):
