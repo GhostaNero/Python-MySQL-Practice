@@ -111,21 +111,26 @@ def nameFinderOperation(quickSearch, targetFirstName, targetSecondName, countryC
             except:
                 print("Error, the initiation of the quick search list has encountered a problem")
                 return 1
+            
+        addon = ""
+        
+        if targetFirstName:
+            
+            addon = f"WHERE firstName = `{targetFirstName}` "
+            
+        if targetSecondName:
+            
+            addon = addon + f"AND secondName = `{targetSecondName}`"
+        
+        addon = addon + ";"
         
         if countryCode:
             
             try:
+                
                 countryCode.lower()
-                
-                if targetFirstName:
-                    
-                    sql = f"SELECT * FROM `{countryCode}` WHERE firstName = `{targetFirstName}`;"
-                
-                elif targetSecondName:
-                    sql = f"SELECT * FROM `{countryCode}` WHERE secondName = `{targetSecondName}`;"
-                    
-                else:
-                    sql = f"SELECT * FROM `{countryCode}` WHERE firstName = `{targetFirstName} AND secondName = `{targetSecondName}`;"
+                         
+                sql = f"SELECT * FROM `{countryCode}` " + addon
                 
                 mycursor.execute(sql)
                 
@@ -154,19 +159,7 @@ def nameFinderOperation(quickSearch, targetFirstName, targetSecondName, countryC
                 try:
                     for i in range(len(quickSearchFileList)):
                         
-                        addon = ""
-                        addon2 = ""
-                        sql = f"SELECT * FROM `{quickSearchFileList[i].lower()}` WHERE"
-                        
-                        if targetFirstName:
-                            
-                            addon = f"firstName = `{targetFirstName}`"
-                            
-                        if targetSecondName:
-                            
-                            addon2 = f"secondName = `{targetSecondName}`"
-                        
-                        sql = sql + addon + " AND " + addon2 + ";"
+                        sql = f"SELECT * FROM `{quickSearchFileList[i].lower()}` " + addon
                         
                         mycursor.execute(sql)
                         
@@ -188,20 +181,7 @@ def nameFinderOperation(quickSearch, targetFirstName, targetSecondName, countryC
                 try:
                     for i in range(fileName):
                         
-                        addon = ""
-                        addon2 = ""
-                        
-                        sql = f"SELECT * FROM {fileName[i].lower()} WHERE"  
-                        
-                        if targetFirstName:
-                            
-                            addon = f"firstName = `{targetFirstName}`"
-                            
-                        if targetSecondName:
-                            
-                            addon2 = f"secondName = `{targetSecondName}`"    
-                        
-                        sql = sql + addon + " AND " + addon2 + ";"   
+                        sql = f"SELECT * FROM {fileName[i].lower()} " + addon
                         
                         mycursor.execute(sql) 
                         
@@ -222,7 +202,8 @@ def nameFinderOperation(quickSearch, targetFirstName, targetSecondName, countryC
         
         print("Error, there has been some kind of bug within the search operation.")
         return 1
-
+      
+        
 def repairmentOperation(countryCode, fileList):
     
     #establish connection to database
@@ -292,26 +273,38 @@ def repairmentOperation(countryCode, fileList):
             return 0
                 
 
-def nameFinder(listName, listFile):
+def nameFinder(listName):
+    
+    
+    code = ""
+    quickSearch = ""
     
     bold("Welcome to the name finder tool\n")
-    countryCode = input("Please enter a country code (if empty will search for every country table): ")
-    name = input("Please enter a name (type quit to leave): ")
+    firstName = input("Please enter a first name (type quit to leave): ")
     
-    while len(name) == 0 and name != "quit":
-        print("Error! Please enter a name")
-        name = input("Enter (type quit to leave): ")
+    firstName = validationNameFinder(firstName)
+        
+    secondName = input("Please enter a first name (type quit to leave): ")
     
-    if name != "quit":
+    secondName = validationNameFinder(secondName)
+    
+    if firstName != "quit" and secondName != "quit":
         
         code = input("Please enter the country code to give a more precise search (if left blank, will search through every table): ")
         if code:
-            print("hello")
+            state = nameFinderOperation(quickSearch, firstName, secondName, code, listName)
         else:
             print("We have detected that a country code hasn't been entered, would you like to enable quick search? (only works with english names)")
             quickSearch = input("Please enter Y or N: ")
+      
         
-            
+def validationNameFinder(name):
+    
+    while len(name) == 0 and name != "quit":
+        print("Error! Please enter a name")
+        name = input("Enter (type quit to leave): ")  
+        
+    return name     
              
             
 def menuSelection():
@@ -369,7 +362,6 @@ def userGuide():
             print(tx.GUIDETEXT4, end="\n")
             
     return 0
-    
     
         
 def callFunction(choice, listName, listFile):
