@@ -80,6 +80,7 @@ def codeFunction(list):
     print("\n")
     return 0 
 
+
 def nameFinderOperation(quickSearch, targetFirstName, targetSecondName, countryCode, fileName):
     
     try:  
