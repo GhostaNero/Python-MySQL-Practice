@@ -4,11 +4,10 @@ import mysql.connector
 import ignore
 import pandas as pd
 import sqlalchemy
-import time
 import text as tx
 PASSWORD = ignore.password
-
-
+        
+    
 def bold(type): 
     sys.stdout.write("\033[1m" + type + "\033[0m") 
 
@@ -84,6 +83,7 @@ def codeFunction(list):
 def nameFinderOperation(quickSearch, targetFirstName, targetSecondName, countryCode, fileName):
     
     try:  
+        #establish connection
         mydb = mysql.connector.connect(
         host="localhost",
         user="root",
@@ -95,103 +95,110 @@ def nameFinderOperation(quickSearch, targetFirstName, targetSecondName, countryC
         mycursor.execute("USE COUNTRY;")
         mydb.commit()
 
+        #initiate a list where it will store all the country code that doesnt contain any non-alphabetical name
         quickSearchFileList = []
         
         for i in range(len(fileName)):
             
             try:
+                #select name that has non-alphabetical letter
                 sql = f"SELECT * FROM `{fileName[i].lower()}` WHERE firstName REGEXP '^[^abcdefghijklmnopqrstuwvzx]*$' OR secondName REGEXP  '^[^abcdefghijklmnopqrstuwvzx]*$';"
                 mycursor.execute(sql)
-                
+                #fetch the data
                 data = mycursor.fetchone()
-                
+                #if data doesn't exists
                 if not data:
+                    #append it to the list
                     quickSearchFileList.append(fileName[i].lower())
+            #if an error occured
             except:
+                #print error code
                 print("Error, the initiation of the quick search list has encountered a problem")
                 return 1
-            
+        #establish a string which we will use for our SQL statement    
         addon = ""
-        
+        #if the user inputted a first name
         if targetFirstName:
-            
+            #concatonate it to the string
             addon = f"WHERE firstName = `{targetFirstName}` "
-            
+        #if the user inputted a second name    
         if targetSecondName:
-            
+            #concatonate it to the string
             addon = addon + f"AND secondName = `{targetSecondName}`"
         
         addon = addon + ";"
-        
+        #if the user inputted a country code
         if countryCode:
             
             try:
                 
                 countryCode.lower()
-                         
+                #complete our sql statement         
                 sql = f"SELECT * FROM `{countryCode}` " + addon
-                
                 mycursor.execute(sql)
-                
+                #fetch the data
                 data = mycursor.fetchall()
-                
+                #if data exists
                 if data:
-                    
+                    #return true
                     return True
+                #if there isn't any data
                 else:
+                    #return false
                     return False
-                
+            #if there is an error    
             except:
-                
+                #print error message
                 print("Error, there has been a problem while trying to search for a name with a specific country code.")
                 return 1
 
             
-
+        #if there isn't a country code inputted
         else:
-            
-            
+        
+            #declare a list which will store all the table that contains this name
             countryCodeExists = []
-            
+            #if the user has asked for a quick search
             if quickSearch.lower() == "y":
 
                 try:
+                    #loop through all the table
                     for i in range(len(quickSearchFileList)):
-                        
+                        #complete the sql statement
                         sql = f"SELECT * FROM `{quickSearchFileList[i].lower()}` " + addon
-                        
                         mycursor.execute(sql)
-                        
+                        #fetch the data
                         data = mycursor.fetchone()
-                        
+                        #if the data exists
                         if data:
-                
+                            # append the current country code to the list
                             countryCodeExists.append(quickSearchFileList[i])
-                        
-                        return quickSearchFileList
+                    #return the list    
+                    return quickSearchFileList
+                #if an error occured
                 except:
-                    
+                    #display the error messsage
                     print("Error, problem occured while trying to do a quick search")
                     return 1
                 
-                
+            #if quicksearch is off    
             if quickSearch.lower() == 'n':
                 
                 try:
+                    #loop through every single table
                     for i in range(fileName):
-                        
+                        #complete sql statement
                         sql = f"SELECT * FROM {fileName[i].lower()} " + addon
-
                         mycursor.execute(sql) 
-                        
+                        #append data
                         data = mycursor.fetchone()
-                        
+                        #if there is data
                         if data:
-                            
+                            #append it to the list
                             countryCodeExists.append(fileName[i])
-                            
+                    #return the list
                     return countryCodeExists
-                
+                #if error: display error message
                 except:
                     print("Error, problem occured while trying to do a full search")
                     return 1
@@ -274,17 +281,16 @@ def repairmentOperation(countryCode, fileList):
 
 def nameFinder(listName):
     
-    
+    #declare variable which will be used to store the user input for the country code
     code = ""
-    quickSearch = ""
+    quickSearch = "n"
     
     bold("Welcome to the name finder tool\n")
+    #ask for first name
     firstName = input("Please enter a first name (type quit to leave): ")
-    
     firstName = validationNameFinder(firstName)
-        
+    #ask for second name                       #THIS NEEDS A WORK AROUND. CUZ ITS EITHER FIRST NAME OR SECOND NAME NOT BOTH
     secondName = input("Please enter a first name (type quit to leave): ")
-    
     secondName = validationNameFinder(secondName)
     
     if firstName != "quit" and secondName != "quit":
@@ -343,6 +349,10 @@ def menuSelection():
             validation = True
             
     return int(userInput)
+
+
+def userTool():
+    pass
 
 
 def userGuide():
