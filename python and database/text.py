@@ -26,7 +26,7 @@ REPAIRMENT = "\nThe repairment tool will repair any database that seems to have 
 
 # user tool
 
-TOOL = "1. DELETE RECORD\n2. DELETE TABLE\n3. ADD RECORD\n4. CHANGE RECORD"
+TOOL = "1. DELETE RECORD\n2. DELETE TABLE\n3. ADD RECORD\n4. CHANGE RECORD\n5. QUIT"
 
 
 
