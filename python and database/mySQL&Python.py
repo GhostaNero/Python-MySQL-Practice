@@ -6,7 +6,8 @@ import pandas as pd
 import sqlalchemy
 import text as tx
 PASSWORD = ignore.password
-        
+
+logIn = False     
     
 def bold(type): 
     sys.stdout.write("\033[1m" + type + "\033[0m") 
@@ -90,7 +91,7 @@ def nameFinderOperation(quickSearch, targetFirstName, targetSecondName, countryC
         password=PASSWORD
         )
         #establish a cursor to interact with the database
-        mycursor = mydb.cursor()
+        mycursor = mydb.cursor(buffered=True)
         #execute to use the database 
         mycursor.execute("USE COUNTRY;")
         mydb.commit()
@@ -150,7 +151,7 @@ def nameFinderOperation(quickSearch, targetFirstName, targetSecondName, countryC
             except:
                 #print error message
                 print("Error, there has been a problem while trying to search for a name with a specific country code.")
-                return 1
+                return 
 
             
         #if there isn't a country code inputted
@@ -279,6 +280,50 @@ def repairmentOperation(countryCode, fileList):
             return 0
                 
 
+def askName():
+
+    
+    firstName = ""
+    secondName = ""
+    print("Please enter the corrosponding number for your choice:\n1. First name only\n2. Second name only\n3. Both name")
+    userInput = input("Enter: ")
+    
+    validation = False
+    while validation == False:
+        
+        if userInput.isdigit() == False:
+            print("Error please enter a number with a digit")
+        elif 3 < int(userInput) < 1:
+            print("Error please enter between 1 and 3")
+        else:
+            
+            break
+        
+        userInput = input("Enter: ")
+    
+    userInput = int(userInput)
+    
+    if userInput == 1:
+        
+        firstName = input("Please enter a first name (type quit to leave): ")
+        firstName = validationNameFinder(firstName)
+        
+    elif userInput == 2:
+        
+        secondName = input("Please enter a first name (type quit to leave): ")
+        secondName = validationNameFinder(secondName)
+
+    elif userInput == 3:
+        
+        firstName = input("Please enter a first name (type quit to leave): ")
+        firstName = validationNameFinder(firstName)
+        
+        secondName = input("Please enter a first name (type quit to leave): ")
+        secondName = validationNameFinder(secondName)
+    
+    return firstName, secondName
+        
+            
 def nameFinder(listName):
     
     #declare variable which will be used to store the user input for the country code
@@ -286,14 +331,10 @@ def nameFinder(listName):
     quickSearch = "n"
     
     bold("Welcome to the name finder tool\n")
-    #ask for first name
-    firstName = input("Please enter a first name (type quit to leave): ")
-    firstName = validationNameFinder(firstName)
-    #ask for second name                       #THIS NEEDS A WORK AROUND. CUZ ITS EITHER FIRST NAME OR SECOND NAME NOT BOTH
-    secondName = input("Please enter a first name (type quit to leave): ")
-    secondName = validationNameFinder(secondName)
+    #ask for name
+    firstName, secondName = askName()
     
-    if firstName != "quit" and secondName != "quit":
+    if firstName != "quit" or secondName != "quit":
         
         code = input("Please enter the country code to give a more precise search (if left blank, will search through every table): ")
         
@@ -349,11 +390,61 @@ def menuSelection():
             validation = True
             
     return int(userInput)
+    
 
+def userTool(listName):
+    
+    if logIn == False:
+        print("Error, please log in before accessing this tool")
+        return 0
 
-def userTool():
+    else:
+        
+        print(tx.TOOL)
+        userInput = input("\nPlease enter a choice: ")   
+        validation = False
+            
+        while validation == False:
+            
+            if userInput.isdigit() == False:
+                print("Error, not a number")
+                userInput = input("Enter: ")
+            elif  int(userInput) < 1 or int(userInput) > 5:
+                print("Error, out of range")
+                userInput = input("Enter: ")
+            else:
+                validation = True
+        
+        while userInput != 5:
+            
+            if userInput == 1:
+                deleteRecord(listName)
+                
+            if userInput == 2:
+                deleteTable(listName)
+            
+            if userInput == 3:
+                addRecord(listName)
+            
+            if userInput == 4:
+                alterRecord(listName)
+             
+                
+def deleteRecord(listName):
     pass
 
+
+def deleteTable(listName):
+    pass
+
+
+def addRecord(listName):
+    pass
+
+    
+def alterRecord(listName):
+    pass
+       
 
 def userGuide():
     
@@ -401,8 +492,10 @@ def callFunction(choice, listName, listFile):
         codeFunction(listName)
         
     elif choice == 3:
-        nameFinder(listName, listFile)
-    
+        nameFinder(listName)
+    elif choice == 4:
+        userTool()
+            
             
 def main():
     #initiate the program by loading the csv file name
