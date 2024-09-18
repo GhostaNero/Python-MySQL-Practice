@@ -7,6 +7,24 @@ import sqlalchemy
 import text as tx
 PASSWORD = ignore.password
 
+
+
+mydb = mysql.connector.connect(
+      host="localhost",
+      user="root",
+      password=PASSWORD
+    )
+connection = sqlalchemy.create_engine(f'mysql+mysqlconnector://root:{PASSWORD}@localhost:3306')
+#establish a cursor to interact with the database
+mycursor = mydb.cursor(buffered=True)
+#create the database if it doesnt exists
+mycursor.execute("CREATE DATABASE IF NOT EXISTS COUNTRY;")
+mydb.commit()
+#execute to use the database 
+mycursor.execute("USE COUNTRY;")
+mydb.commit()
+
+
 logIn = False     
     
 def bold(type): 
@@ -84,18 +102,6 @@ def codeFunction(list):
 def nameFinderOperation(quickSearch, targetFirstName, targetSecondName, countryCode, fileName):
     
     try:  
-        #establish connection
-        mydb = mysql.connector.connect(
-        host="localhost",
-        user="root",
-        password=PASSWORD
-        )
-        #establish a cursor to interact with the database
-        mycursor = mydb.cursor(buffered=True)
-        #execute to use the database 
-        mycursor.execute("USE COUNTRY;")
-        mydb.commit()
-
         #initiate a list where it will store all the country code that doesnt contain any non-alphabetical name
         quickSearchFileList = []
         
@@ -103,7 +109,7 @@ def nameFinderOperation(quickSearch, targetFirstName, targetSecondName, countryC
             
             try:
                 #select name that has non-alphabetical letter
-                sql = f"SELECT * FROM `{fileName[i].lower()}` WHERE firstName REGEXP '^[^abcdefghijklmnopqrstuwvzx]*$' OR secondName REGEXP  '^[^abcdefghijklmnopqrstuwvzx]*$';"
+                sql = f"SELECT * FROM `{fileName[i].lower()}` WHERE firstName REGEXP '^[^abcdefghijklmnopqrstuwvzx]*$' OR secondName REGEXP  '^[^abcdefghijklmnopqrstuwvzx]*$'LIMIT 1;"
                 mycursor.execute(sql)
                 #fetch the data
                 data = mycursor.fetchone()
@@ -117,17 +123,18 @@ def nameFinderOperation(quickSearch, targetFirstName, targetSecondName, countryC
                 print("Error, the initiation of the quick search list has encountered a problem")
                 return 1
         #establish a string which we will use for our SQL statement    
-        addon = ""
+        addon = "WHERE "
         #if the user inputted a first name
         if targetFirstName:
-            #concatonate it to the string
-            addon = f"WHERE firstName = `{targetFirstName}` "
+            #concatonate it t"o the string
+            addon = addon + f"firstName = '{targetFirstName}' "
         #if the user inputted a second name    
-        if targetSecondName:
+        elif targetSecondName:
             #concatonate it to the string
-            addon = addon + f"AND secondName = `{targetSecondName}`"
-        
-        addon = addon + ";"
+            addon = addon + f"secondName = '{targetSecondName}' "
+        elif targetFirstName and targetSecondName:
+            addon = addon + f"firstName = '{targetFirstName}' AND secondName = '{targetSecondName}'"
+        addon = addon + "LIMIT 1;"
         #if the user inputted a country code
         if countryCode:
             
@@ -187,9 +194,9 @@ def nameFinderOperation(quickSearch, targetFirstName, targetSecondName, countryC
                 
                 try:
                     #loop through every single table
-                    for i in range(fileName):
+                    for i in range(len(fileName)):
                         #complete sql statement
-                        sql = f"SELECT * FROM {fileName[i].lower()} " + addon
+                        sql = f"SELECT * FROM `{fileName[i].lower()}` " + addon
                         mycursor.execute(sql) 
                         #append data
                         data = mycursor.fetchone()
@@ -197,6 +204,7 @@ def nameFinderOperation(quickSearch, targetFirstName, targetSecondName, countryC
                         if data:
                             #append it to the list
                             countryCodeExists.append(fileName[i])
+                        print(i / len(fileName) * 100 , "%")
                     #return the list
                     return countryCodeExists
                 #if error: display error message
@@ -212,22 +220,6 @@ def nameFinderOperation(quickSearch, targetFirstName, targetSecondName, countryC
       
         
 def repairmentOperation(countryCode, fileList):
-    
-    #establish connection to database
-    mydb = mysql.connector.connect(
-      host="localhost",
-      user="root",
-      password=PASSWORD
-    )
-    connection = sqlalchemy.create_engine(f'mysql+mysqlconnector://root:{PASSWORD}@localhost:3306')
-    #establish a cursor to interact with the database
-    mycursor = mydb.cursor()
-    #create the database if it doesnt exists
-    mycursor.execute("CREATE DATABASE IF NOT EXISTS COUNTRY;")
-    mydb.commit()
-    #execute to use the database 
-    mycursor.execute("USE COUNTRY;")
-    mydb.commit()
     #if the user selected to repair the full database (which means they have to wait for so long)
     
     if countryCode == "*":
@@ -346,6 +338,9 @@ def nameFinder(listName):
                 
                 print("Name is found")
                 return 0
+            else:
+                
+                print("Name not found")
                 
         else:
             
@@ -357,10 +352,14 @@ def nameFinder(listName):
             
             if arrayOfCountryCode:
                 
-                for i in arrayOfCountryCode:
+                print("The country code which the name was found:\n====================================\n")
+                for i in range(len(arrayOfCountryCode)):
                     
-                    print(arrayOfCountryCode[i])
-                    return 0
+                    print(arrayOfCountryCode[i], end=", ")
+                print("\n=======================================\n")
+                return 0
+            else:
+                print("Not found in any table")
       
         
 def validationNameFinder(name):
@@ -431,20 +430,177 @@ def userTool(listName):
              
                 
 def deleteRecord(listName):
-    pass
-
-
+    
+    print("To delete a record, please enter the name and the country code of the desired record")
+    firstName, secondName = askName()
+    if firstName != "quit" and secondName != "quit":
+        code = input("Please enter a country code, (type quit to leave): ")
+        while ( code not in listName ) and code != "quit":
+            print("Error, country code not found")
+            code = input("Please enter a country code, (type quit to leave): ")
+        
+        if code == "quit":
+            return 0
+        else:
+            
+            try:
+                #establish a string which we will use for our SQL statement    
+                addon = ""
+                #if the user inputted a first name
+                if firstName:
+                    #concatonate it to the string
+                    addon = f"WHERE firstName = '{firstName}' "
+                #if the user inputted a second name    
+                if secondName:
+                    #concatonate it to the string
+                    addon = addon + f"AND secondName = '{secondName}' "
+                
+                addon = addon + ";"
+                
+                sql = f"DELETE FROM `{code}` " + addon
+                mycursor.execute(sql)
+                mydb.commit()
+                print("Record deleted")
+                return 0
+            
+            except:
+                
+                print("There has been an error: there is a potential that the record does not exists.")
+                return 0
+    else:
+        return 0
+  
+     
 def deleteTable(listName):
-    pass
+    
+    print("Welcome to the table deleter: please enter the country code of which you want the table deleted for.")
+    code = input("Please enter a country code, (type quit to leave): ")
+    while ( code not in listName ) and code != "quit":
+        print("Error, country code not found")
+        code = input("Please enter a country code, (type quit to leave): ")
+    
+    if code == "quit":
+        return 0
+    else:
+        sql = f"DROP TABLE IF EXISTS {code};"
+        mycursor.execute(sql)
+        mydb.commit()
+        print("Table dropped")
+        return 0
 
 
 def addRecord(listName):
-    pass
+    
+    print("Welcome to the record adder, please specify the data for importing and the table to import to")
+    firstName, secondName = askName()
+    
+    while len(firstName) == 0 or len(secondName) == 0:
+        print("For this function to work you will need both names")
+        firstName, secondName = askName()
+    
+    code = input("Please enter a country code, (type quit to leave): ")
+    
+    if firstName != "quit" and secondName !="quit":
+        
+        while ( code not in listName ) and code != "quit":
+            
+            print("Error, country code not found")
+            code = input("Please enter a country code, (type quit to leave): ")
+            
+        if code == "quit":
+            
+            return 0
+        
+        else:
+            
+            gender = input("Please enter a gender (F or M): ")
+            
+            while gender != "F" and gender != "M":
+                gender = input("Please enter a gender (F or M): ")
+            
+            try:
+                
+                sql = f"INSERT INTO `{code}` (firstName, secondName, gender, countryCode ) VALUES (%s, %s)"
+                val = (firstName,secondName, gender, code)
+                
+                mycursor.execute(sql, val)
+                mydb.commit()
+                
+                print("Success")
+                return 0
+            
+            except:
+                
+                print("Error while trying to insert record")
+                return 1
+
+
+            
+    else:
+        return 0
 
     
 def alterRecord(listName):
-    pass
-       
+    
+    print("Welcome to the record alternator, to use this, please specify either one of the name WITH the country code of the record you want to change.")
+    firstName, secondName = askName()
+    
+    code = input("Please enter a country code, (type quit to leave): ")
+    
+    if firstName != "quit" and secondName !="quit":
+        
+        while ( code not in listName ) and code != "quit":
+            
+            print("Error, country code not found")
+            code = input("Please enter a country code, (type quit to leave): ")
+        
+        print("Now, we will ask you the NEW data you want to change into, to not alter, leave it blank")
+        
+        newFirstName = input("first name: ")
+        newSecondName = input("second name: ")
+        newGender = input("gender: ")
+        try:
+            addon = "WHERE "
+            #if the user inputted a first name
+            if firstName:
+                #concatonate it to the string
+                addon = f"firstName = '{firstName}';"
+            #if the user inputted a second name    
+            elif secondName:
+                #concatonate it to the string
+                addon = addon + f"secondName = '{secondName}';"
+            elif firstName and secondName:
+                
+                addon = addon + f"firstName = '{firstName}' AND secondName = '{secondName}';"
+            
+            
+            if newFirstName:
+                
+                sql = f"UPDATE `{code}` SET firstName = {newFirstName} " + addon
+                mycursor.execute(sql)
+                mydb.commit()
+                
+            if secondName:
+                
+                sql = f"UPDATE `{code}` SET secondName = {newSecondName} " + addon
+                mycursor.execute(sql)
+                mydb.commit()
+            
+            if newGender:
+                
+                sql = f"UPDATE `{code}` SET gender = {newGender} " + addon
+                mycursor.execute(sql)
+                mydb.commit()
+                
+            print("Task done")
+            return 0
+        
+        except:
+            print("Man, an error has occcured while trying to update data")
+            return 0
+        
+        
+        
 
 def userGuide():
     
@@ -494,7 +650,7 @@ def callFunction(choice, listName, listFile):
     elif choice == 3:
         nameFinder(listName)
     elif choice == 4:
-        userTool()
+        userTool(listName)
             
             
 def main():
