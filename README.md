@@ -159,3 +159,13 @@ UPDATE ONE
 I am basically done with the back end of the name finder SQL operation. However I still need to write a rigorous testing plan to make sure everything goes according to how I have planned it.
 
 Its is definitely not the neatest code and there is alot of repetition which I will later fix when my program is full functioning (AKA optimisation)
+
+UPDATE TWO
+=================================================
+
+Started to work on the user side of the function.
+
+I've been thinking to myself about how to optimise my code in general, not just efficiency, but the elimination of a large chunk of if statements. Recently I have learnt about switch statement. However I am not sure how to use it when I need to run comparisons.
+
+Alot of the functions are also similar in nature: for example validations and so forth. This got me to consider polymorphism. I think I might rewrite this program somewhere down the line with a much better approach and testing plan.
+
