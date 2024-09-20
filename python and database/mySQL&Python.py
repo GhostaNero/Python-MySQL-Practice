@@ -25,7 +25,8 @@ mycursor.execute("USE COUNTRY;")
 mydb.commit()
 
 
-logIn = False     
+logIn = False
+userName = ""  
     
 def bold(type): 
     sys.stdout.write("\033[1m" + type + "\033[0m") 
@@ -598,9 +599,76 @@ def alterRecord(listName):
         except:
             print("Man, an error has occcured while trying to update data")
             return 0
+             
+
+def manageUser():
+    
+    while True:
         
+        if logIn == False:
+            print("You are not currently logged on.")
+        elif logIn == True:
+            print("You are logged in as:", userName)
         
+        print("1.Log In\n2.Sign up\n3.Change Username or password\n4.Log out\n5.Quit")
+        try:
+            userInput = int(input("Please enter a number between 1-5:"))
+            while 1 < userInput > 5:
+                print("Error, enter between 1-5")
+                userInput = int(input("Please enter a number between 1-5: "))
+        except ValueError:
+            print("Error, not a number")
+            return 0
         
+        mycursor.execute("USE COUNTRY")
+        mydb.commit()
+              
+        match userInput:
+            
+            
+            case 1:
+                logInFunc()
+            case 2:
+                signUp()
+            case 3:
+                changeUser()
+            case 4:
+                logOut()
+            case 5:
+                return 0
+            case 6:
+                print("EH? HOW? (you found an easteregg!)")
+            case _:
+                print("BREH")
+
+
+def logInFunc():
+    
+    userID = input("Username: ")
+    password = input("Password: ")
+    
+    sql = f"SELECT * FROM USER WHERE userID = '{userID}' AND password = '{password}';"
+    mycursor.execute(sql)
+    data = mycursor.fetchall()
+    if data[0] == userID and data[1] == password:
+        logIn = True
+        userName = data[0]
+        return 0
+    else:
+        print("Error: User not found.")
+        return 0
+    
+
+def signUp():
+    pass
+
+
+def logOut():
+    pass
+
+
+def changeUser():
+    pass
 
 def userGuide():
     
