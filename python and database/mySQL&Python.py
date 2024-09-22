@@ -26,7 +26,8 @@ mydb.commit()
 
 
 logIn = False
-userName = ""  
+userName = ""
+passID = ""
     
 def bold(type): 
     sys.stdout.write("\033[1m" + type + "\033[0m") 
@@ -227,7 +228,7 @@ def repairmentOperation(countryCode, fileList):
         #loop
         for i in range(len(fileList)):
             #initiate the table name
-            name = fileList[i].replace(".csv", "")
+            name = fileList[i]
             name = name.lower()
             #the sql and its commit
             deleteSql = f"DROP TABLE IF EXISTS {name}"
@@ -245,7 +246,10 @@ def repairmentOperation(countryCode, fileList):
             dfUnique = df.drop_duplicates()
             #push to table in database
             dfUnique.to_sql(name, schema='COUNTRY', con=connection, if_exists='append', index=False, chunksize=500000)
-            print("Success")
+            print(i / len(fileList) * 100 , "%")
+            
+        print("Success")
+        return 0
     #else if the user wants to search for a country code and repair its table
     else:
         #find the name
@@ -266,6 +270,8 @@ def repairmentOperation(countryCode, fileList):
             dfUnique = df.drop_duplicates()
             dfUnique.to_sql(name, schema='COUNTRY', con=connection, if_exists='append', index=False, chunksize=500000)
             print("Success")
+            
+            return 0
             
         else:
             
@@ -296,23 +302,29 @@ def askName():
     
     userInput = int(userInput)
     
-    if userInput == 1:
+    match userInput:
         
-        firstName = input("Please enter a first name (type quit to leave): ")
-        firstName = validationNameFinder(firstName)
+        case 1:
         
-    elif userInput == 2:
+            firstName = input("Please enter a first name (type quit to leave): ")
+            firstName = validationNameFinder(firstName)
         
-        secondName = input("Please enter a first name (type quit to leave): ")
-        secondName = validationNameFinder(secondName)
+        case 2:
+        
+            secondName = input("Please enter a second name (type quit to leave): ")
+            secondName = validationNameFinder(secondName)
 
-    elif userInput == 3:
+        case 3:
         
-        firstName = input("Please enter a first name (type quit to leave): ")
-        firstName = validationNameFinder(firstName)
+            firstName = input("Please enter a first name (type quit to leave): ")
+            firstName = validationNameFinder(firstName)
+            
+            secondName = input("Please enter a second name (type quit to leave): ")
+            secondName = validationNameFinder(secondName)
         
-        secondName = input("Please enter a first name (type quit to leave): ")
-        secondName = validationNameFinder(secondName)
+        case _:
+            print("wtf")
+            
     
     return firstName, secondName
         
@@ -374,7 +386,7 @@ def validationNameFinder(name):
             
 def menuSelection():
     
-    print(tx.WELCOMETEXT, tx.CHOICE1, tx.CHOICE2, tx.CHOICE3, tx.CHOICE4, tx.CHOICE5, tx.CHOICE6, tx.CHOICE7)
+    print("\n"+tx.WELCOMETEXT, tx.CHOICE1, tx.CHOICE2, tx.CHOICE3, tx.CHOICE4, tx.CHOICE5, tx.CHOICE6, tx.CHOICE7)
     userInput = input("\nPlease enter a choice: ")   
     validation = False
         
@@ -606,14 +618,14 @@ def manageUser():
     while True:
         
         if logIn == False:
-            print("You are not currently logged on.")
+            print("\nYou are not currently logged on.\n")
         elif logIn == True:
-            print("You are logged in as:", userName)
+            print("\nYou are logged in as:", userName)
         
-        print("1.Log In\n2.Sign up\n3.Change Username or password\n4.Log out\n5.Quit")
+        print(" 1.Log In\n 2.Sign up\n 3.Change Username or password\n 4.Log out\n 5.Quit\n")
         try:
-            userInput = int(input("Please enter a number between 1-5:"))
-            while 1 < userInput > 5:
+            userInput = int(input("Please enter a number between 1-5: "))
+            while 1 < userInput > 6:
                 print("Error, enter between 1-5")
                 userInput = int(input("Please enter a number between 1-5: "))
         except ValueError:
@@ -644,32 +656,186 @@ def manageUser():
 
 def logInFunc():
     
+    global logIn 
+    global userName
+    global passID
+    
     userID = input("Username: ")
     password = input("Password: ")
     
-    sql = f"SELECT * FROM USER WHERE userID = '{userID}' AND password = '{password}';"
+    sql = f"SELECT * FROM USER WHERE BINARY userID = '{userID}' AND BINARY password = '{password}';"
     mycursor.execute(sql)
     data = mycursor.fetchall()
-    if data[0] == userID and data[1] == password:
+    if data:
+        print("Logged on")
         logIn = True
-        userName = data[0]
+        userName = data[0][0]
+        passID = data[0][1]
         return 0
     else:
-        print("Error: User not found.")
+        print("Error: User not found.\n")
         return 0
     
 
 def signUp():
-    pass
-
-
+    
+    print("Welcome to the sign up page.")
+    print("To quit, type quit.\n")
+    
+    userID = input("Please enter a username: ")
+    
+    if userID != "quit":
+        
+        password = input("Please enter a password: ")
+        
+        sql = f"SELECT * FROM USER WHERE BINARY userID = '{userID}';"
+        mycursor.execute(sql)
+        data = mycursor.fetchall()
+        if data:
+            print("Error, userID exists")
+            return 0
+        else:
+            try:
+                sql = f"INSERT INTO USER VALUES('{userID}','{password}');"
+                mycursor.execute(sql)
+                mydb.commit()
+                print("Successfully created user.")
+                return 0
+            except:
+                print("There has been some error while trying to create the user.")
+                return 0
+    
+    
 def logOut():
-    pass
-
-
+    
+    global userName
+    global passID
+    global logIn
+    
+    if logIn == False:
+        print("Error, you are not logged on")
+        return 0
+    elif logIn == True:
+        
+        userInput = input("Do you wish to sign out?\nEnter (Y \ N): ")
+        
+        while userInput != "Y" and userInput != "N":
+            
+            print("Please only enter Y or N")
+            userInput = input("Do you wish to sign out?\nEnter (Y \ N): ")
+        
+        match userInput:
+            
+            case "Y":
+                logIn = False
+                userName = ""
+                passID = ""
+                return 0
+            case "N":
+                return 0        
+        
+    
 def changeUser():
-    pass
+    
+    global logIn
+    global userName
+    global passID
+    
+    while True:
+        if logIn == False:
+            print("You are not logged on\n")
+            return 0
+        else:
+            print("\n 1. Change username\n 2. Change password\n 3. Quit")
+            userInput = input("Enter: ")
+            
+        match userInput:
+            
+            case 1:
+                
+                newUsername = input("Please enter your new username: ")
+                
+                while validation == False:
+                    print("Are you sure this is the correct username? ", newUsername)
+                    validInput = input("Enter (Y \ N): ")
+                    
+                    if validInput == "N":
+                        newUsername = input("Please enter your new username: ")
+                        
+                    elif validInput == "Y":
+                        validation = True
+                
+                
+                sql = f"SELECT * FROM USER WHERE BINARY userID = '{newUsername}';"
+                mycursor.execute(sql)
+                data = mycursor.fetchall()
+                if data:
+                    print("Error, userID exists")
+                    return 0
+                
+                else:
+                    
+                    sql = f"UPDATE user SET userID = '{newUsername}' WHERE userID = '{userName}' AND password = '{passID}';"
+                    mycursor.execute(sql)
+                    mydb.commit()
+                    print("Success")
+                    userName == newUsername
+                    return 0
+                                                  
+            case 2:
+                
+                newPassword = input("Please enter your new password: ")
+                confirmPassword = input("Please confirm your new password: ")
+                
+                while newPassword != confirmPassword:
+                    
+                    print("Error, the new password and confirmed password is incorrect")
+                    newPassword = input("Please enter your new password: ")
+                    confirmPassword = input("Please confirm your new password: ")
+                
+                
+                sql = f"UPDATE user SET password = '{newPassword}' WHERE userID = '{userName}' AND password = '{passID}';"
+                mycursor.execute(sql)
+                mydb.commit()
+                print("Success")
+                passID = newPassword
+                return 0
+            
+            case 3:
+                return 0
+            case _:
+                
+                print("Error, not a valid choice")
+        
 
+def repairChoice(listName):
+    
+    while True:
+        
+        print("Welcome\n 1.Repair specific table\n 2.Repair whole database (NOT RECOMMENDED)")
+        userInput = input("Enter: ")
+        
+        match userInput:
+            
+            case 1:
+                userInput = input("Please enter a country code: ")              
+                repairmentOperation(userInput, listName)
+                
+                return 0 
+            case 2:
+                print("ARE YOU SURE YOU WANT TO DO THIS DAWG, IT TAKES ABOUT 1 HOUR TO FIX")
+                
+                userInput = input("TYPE 'YES' TO PROCEED: ")
+                if userInput != "YES":
+                    return 0
+                else:
+                    countryCode = "*"
+                    repairmentOperation(countryCode, listName)
+                    return 0
+            case _:
+                print("Invalid input")
+                
+        
 def userGuide():
     
     #initiate the list of guide
@@ -709,16 +875,22 @@ def userGuide():
         
 def callFunction(choice, listName, listFile):
     
-    if choice == 1:
-        userGuide()
+    
+    match choice:
         
-    elif choice == 2:
-        codeFunction(listName)
+        case 1:
+            userGuide()
+        case 2:
+            codeFunction(listName)
         
-    elif choice == 3:
-        nameFinder(listName)
-    elif choice == 4:
-        userTool(listName)
+        case 3:
+            nameFinder(listName)
+        case 4:
+            userTool(listName)
+        case 5:
+            manageUser()
+        case 6:
+            repairChoice(listName)
             
             
 def main():
