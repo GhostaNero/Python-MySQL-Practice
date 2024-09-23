@@ -240,7 +240,7 @@ def repairmentOperation(countryCode, fileList):
             #print a log for the success of creation
             print("System log: table created for", name)
             #read in the data
-            df = pd.read_csv(f"{ignore.path}\{fileList[i]}", header=None, dtype={0:'string', 1:'string', 2:'string', 3:'string'})
+            df = pd.read_csv(f"{ignore.path}\{fileList[i]}.csv", header=None, dtype={0:'string', 1:'string', 2:'string', 3:'string'})
             df.columns = ["firstName", "secondName", "Gender", "countryCode"]
             #remove all the duplicate
             dfUnique = df.drop_duplicates()
@@ -255,7 +255,7 @@ def repairmentOperation(countryCode, fileList):
         #find the name
         
     
-        if countryCode in fileList:
+        if countryCode.upper() in fileList:
             
             countryCode = countryCode.lower()
             deleteSql = f"DROP TABLE IF EXISTS {countryCode}"
@@ -264,11 +264,11 @@ def repairmentOperation(countryCode, fileList):
             sql = f"CREATE TABLE IF NOT EXISTS `{countryCode}` (firstName varchar(255), secondName varchar(255), Gender varchar(5), countryCode varchar(4) );"
             mycursor.execute(sql,)
             mydb.commit()
-            print("System log: table created for", name)
-            df = pd.read_csv(f"{ignore.path}\{countryCode}", header=None, dtype={0:'string', 1:'string', 2:'string', 3:'string'})
+            print("System log: table created for", countryCode)
+            df = pd.read_csv(f"{ignore.path}\{countryCode.upper()}.csv", header=None, dtype={0:'string', 1:'string', 2:'string', 3:'string'})
             df.columns = ["firstName", "secondName", "Gender", "countryCode"]
             dfUnique = df.drop_duplicates()
-            dfUnique.to_sql(name, schema='COUNTRY', con=connection, if_exists='append', index=False, chunksize=500000)
+            dfUnique.to_sql(countryCode, schema='COUNTRY', con=connection, if_exists='append', index=False, chunksize=500000)
             print("Success")
             
             return 0
@@ -425,22 +425,25 @@ def userTool(listName):
                 print("Error, out of range")
                 userInput = input("Enter: ")
             else:
+                userInput = int(userInput)
                 validation = True
         
-        while userInput != 5:
+        match userInput:
             
-            if userInput == 1:
+            case 1:
                 deleteRecord(listName)
                 
-            if userInput == 2:
+            case 2:
                 deleteTable(listName)
             
-            if userInput == 3:
+            case 3:
                 addRecord(listName)
             
-            if userInput == 4:
+            case 4:
                 alterRecord(listName)
-             
+            
+            case _:
+                return 0             
                 
 def deleteRecord(listName):
     
@@ -815,25 +818,28 @@ def repairChoice(listName):
         print("Welcome\n 1.Repair specific table\n 2.Repair whole database (NOT RECOMMENDED)")
         userInput = input("Enter: ")
         
-        match userInput:
-            
-            case 1:
-                userInput = input("Please enter a country code: ")              
-                repairmentOperation(userInput, listName)
+        try:
+            match int(userInput):
                 
-                return 0 
-            case 2:
-                print("ARE YOU SURE YOU WANT TO DO THIS DAWG, IT TAKES ABOUT 1 HOUR TO FIX")
-                
-                userInput = input("TYPE 'YES' TO PROCEED: ")
-                if userInput != "YES":
-                    return 0
-                else:
-                    countryCode = "*"
-                    repairmentOperation(countryCode, listName)
-                    return 0
-            case _:
-                print("Invalid input")
+                case 1:
+                    userInput = input("Please enter a country code: ")              
+                    repairmentOperation(userInput, listName)
+                    
+                    return 0 
+                case 2:
+                    print("ARE YOU SURE YOU WANT TO DO THIS DAWG, IT TAKES ABOUT 1 HOUR TO FIX")
+                    
+                    userInput = input("TYPE 'YES' TO PROCEED: ")
+                    if userInput != "YES":
+                        return 0
+                    else:
+                        countryCode = "*"
+                        repairmentOperation(countryCode, listName)
+                        return 0
+                case _:
+                    print("Invalid input")
+        except:
+            print("Error")
                 
         
 def userGuide():
