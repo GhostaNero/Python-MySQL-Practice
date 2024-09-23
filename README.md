@@ -169,3 +169,15 @@ I've been thinking to myself about how to optimise my code in general, not just 
 
 Alot of the functions are also similar in nature: for example validations and so forth. This got me to consider polymorphism. I think I might rewrite this program somewhere down the line with a much better approach and testing plan.
 
+
+UPDATE THREE (FINISHED)
+================================================
+
+The program is now finished, however there are so many similar codes that I think optimising the whole program is a very easy task after I analysis it. As of now I am happy that this is done and will soon follow an update on me marking comments for the program and a guide on how to alter this so you can use it on your machine too to test around with it!
+
+Happy days! 
+
+int main(void):
+    printf("Program completed")
+    return 0
+
