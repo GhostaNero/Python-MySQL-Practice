@@ -8,7 +8,6 @@ import text as tx
 PASSWORD = ignore.password
 
 
-
 mydb = mysql.connector.connect(
       host="localhost",
       user="root",
@@ -59,7 +58,7 @@ def initiate():
 def codeFunction(list):
     
     #asks user for input
-    userInput = input("Please type in the country code to search! \nNote: If left blank the program will display every country code. \nInput: ")
+    userInput = (input("Please type in the country code to search! \nNote: If left blank the program will display every country code. \nInput: ")).upper()
     
     #if the input exists:
     if userInput:
@@ -70,13 +69,6 @@ def codeFunction(list):
                 print("Exists")
                 return 0
                  
-                    
-    #if user left it blank then return false       
-    else:
-        for i in range(len(list)):
-            print(list[i], end=", ")
-        print("\n")
-        return 0
 
     #else then its definitetly not found, display error code
     print("Error: Country Code not found.")
@@ -518,7 +510,7 @@ def addRecord(listName):
     
     if firstName != "quit" and secondName !="quit":
         
-        while ( code not in listName ) and code != "quit":
+        while ( code.upper() not in listName ) and code != "quit":
             
             print("Error, country code not found")
             code = input("Please enter a country code, (type quit to leave): ")
@@ -536,7 +528,7 @@ def addRecord(listName):
             
             try:
                 
-                sql = f"INSERT INTO `{code}` (firstName, secondName, gender, countryCode ) VALUES (%s, %s)"
+                sql = f"INSERT INTO `{code}` (firstName, secondName, gender, countryCode ) VALUES (%s, %s, %s, %s)"
                 val = (firstName,secondName, gender, code)
                 
                 mycursor.execute(sql, val)
@@ -914,3 +906,10 @@ def main():
         
     
 main()
+
+
+
+
+
+#defo needs some optimisation, I can do better XDDD
+
