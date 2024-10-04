@@ -178,6 +178,6 @@ The program is now finished, however there are so many similar codes that I thin
 Happy days! 
 
 int main(void):
-    printf("Program completed")
+    printf("Program completed");
     return 0
 
