@@ -41,7 +41,7 @@ def initiate():
         listFile = os.listdir(path)
     except:
         print("Error 01: Cannot load the csv file names into a list")
-        sys.exit()
+        sys.exit(1)
         
     #declare an empty list with the length of the listFile
     listName = [""] * len(listFile)
